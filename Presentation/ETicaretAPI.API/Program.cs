@@ -1,4 +1,9 @@
+using ETicaretAPI.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
+
+//Apý katmanýndan Persistence katmanýna eriþim için yazdýðýmýz methodu depending enjectiona enjecte ediyoruz. = tabi bunun için API katmanýna Persistence katmanýný referans olarak veriyoruz.
+builder.Services.AddPersistenceService();
 
 // Add services to the container.
 
