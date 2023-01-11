@@ -11,7 +11,7 @@ namespace ETicaretAPI.Domain.Entities
     {
         public string Name { get; set; }
         public int Stock { get; set; }
-        public int Price { get; set; }
+        public float Price { get; set; }
         public ICollection<Order> Orders { get; set; } //Productın birden çok orderı olabiliyor. == mantığı order sayfasında entites de açıkladım.
     }
 }
