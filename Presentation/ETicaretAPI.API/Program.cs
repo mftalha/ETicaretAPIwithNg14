@@ -1,4 +1,7 @@
+using ETicaretAPI.Application.Validators.Products;
+using ETicaretAPI.Infrastructure.Filters;
 using ETicaretAPI.Persistence;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +14,15 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.Wi
 //policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin() //böyle dediðimde her gelen istek atabilecek belirli bir url sýnýrý koymadýk daha.
 )); //2 seçenek var sitelere göre veya default olarak projeye göre
 
-builder.Services.AddControllers();
+
+
+//controllar mekanizmasýnýn bildiðimiz gibi çalýþmasýný saðlayan servis.
+//builder.Services.AddControllers()
+builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>()) //paremetre olarak  verdiðim yapý sayesinde artýk : validationlarý ben kontrol edecem ve sonuçlara göre istediðim gibi dönüþ saðlayabileceðim. ValidationFilter servisi ile.
+    .AddFluentValidation(configuration => configuration.RegisterValidatorsFromAssemblyContaining<CreateProductValidator>()) // AddFluentValidation : validation iþlemleri için kullandýðýmýz kütüphaneydi : nuget'ten indirip projemize dahil etmiþtik application katmanýnda. ilgili validationlarý : ilgili methodlara baðladýðýmýzý artýk veri iþlemlerinde validationlarýda kontrol etmesi gerektiðini projeye burada veriyoruz. - RegisterValidatorsFromAssemblyContaining methodunu kullanma sebimiz ise her oluþturduðumuz validation modelini burda teker teker tanýmlamamak için CreateProductValidator diye 1 tane validationun yolunu veriyoruz : ve artýk bundan sonra diðer validationlarýda kendisi o dosya yolundan alacaktýr. : bizim teker teker her seferinde vermemize gerek yok artýk.
+    .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true); // burasý sayesinde mvc nin gelen veriler üzerinden filtrelemeye uymayan yapýlarý otomatik yakalamasýný kapattýk. : biz yakalýyacaz controlalrda : þartlar ile.
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
