@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ETicaretAPI.Application.ViewModel.Product
+namespace ETicaretAPI.Application.ViewModels.Product
 {
     public class VM_Create_Product // view model oluşturma sebimiz : dış dünyadan gelecek istekler için model = direk entity ile bağlantı kurmasın diye. dış dünyadan gelen istek.
                                     // wiew model geçici süreliğine oluşturuldu. ilerde farklı bir yöntem kullanacaz. 

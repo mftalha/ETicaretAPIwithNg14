@@ -1,12 +1,17 @@
 using ETicaretAPI.Application.Validators.Products;
+using ETicaretAPI.Infrastructure;
 using ETicaretAPI.Infrastructure.Filters;
 using ETicaretAPI.Persistence;
 using FluentValidation.AspNetCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 //Apý katmanýndan Persistence katmanýna eriþim için yazdýðýmýz methodu depending enjectiona enjecte ediyoruz. = tabi bunun için API katmanýna Persistence katmanýný referans olarak veriyoruz.
-builder.Services.AddPersistenceService();
+builder.Services.AddPersistenceServices();
+//Apý katmanýndan Infrastructure katmanýna eriþim için yazdýðýmýz methodu depending enjectiona enjecte ediyoruz. =  bunun için API katmanýna Infrastructure katmanýný referans olarak veriyoruz.
+builder.Services.AddInfrastructureServices();
+
 
 //cors politikalarý için servis oluþturma => app.UseCors(); diye aþþagýdan eklemeyi unutmamalýyým
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins("http://localhost:4200", "https://localhost:4200").AllowAnyHeader().AllowAnyMethod()

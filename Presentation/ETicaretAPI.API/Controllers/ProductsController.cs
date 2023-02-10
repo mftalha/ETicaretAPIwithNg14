@@ -1,11 +1,13 @@
 ﻿using ETicaretAPI.Application.Repositories;
 using ETicaretAPI.Application.RequestParameters;
-using ETicaretAPI.Application.ViewModel.Product;
+using ETicaretAPI.Application.Services;
+using ETicaretAPI.Application.ViewModels.Product;
 using ETicaretAPI.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Net;
+
 
 namespace ETicaretAPI.API.Controllers
 {
@@ -16,15 +18,16 @@ namespace ETicaretAPI.API.Controllers
         readonly private IProductWriteRepository _productWriteRepository;
         readonly private IProductReadRepository _productReadRepository;
         private readonly IWebHostEnvironment _webHostEnvironment; // wwwroot path'ine erişim için kullanıyoruz.
-
+        private IFileService _fileService;
         public ProductsController(
             IProductWriteRepository productWriteRepository,
             IProductReadRepository productReadRepository,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,IFileService fileService)
         {
             _productWriteRepository = productWriteRepository;
             _productReadRepository = productReadRepository;
             this._webHostEnvironment = webHostEnvironment;
+            _fileService = fileService;
         }
 
         [HttpGet]
@@ -97,24 +100,7 @@ namespace ETicaretAPI.API.Controllers
         [HttpPost("[action]")] // birden fazla post methodu olduğu için action ismi ile ayırmamız gerekiyor : şart = bizde kendi adını veriyoruz action kısmına.
         public async Task<IActionResult> Upload()
         {
-             
-            // Path.Combine(_webHostEnvironment.WebRootPath,"ahmet"); == wwwroot/ahmet
-            string uploadPath = Path.Combine(_webHostEnvironment.WebRootPath,"resource/product-images");
-
-            if (!Directory.Exists(uploadPath)) // ilgili path'de klasör mevcut değilse klasör'ü oluştur.
-                Directory.CreateDirectory(uploadPath);
-
-            Random r = new(); //random isim alabilmek için
-            //Request.Form.Files  // clientten gelen FormData ları burda yakalıyacaz : method paremetresi olarak yakalamıyoruz burda yakalıyoruz dikkkat! : collection olarak geldiği için foreach ile kullanabileceğim.
-            foreach(IFormFile file in Request.Form.Files)
-            {
-                //file.Name = a.png deki : a yı alır sadece uzantısını almaz. ,,, file.FileName ilede = a.png : deki png yi alır : yani type'ı alır.
-                string fullPath = Path.Combine(uploadPath, $"{r.Next()}{Path.GetExtension(file.FileName)}"); // dosyaların isimlerinin benzersiz olmasını sağlamak için nereye kaydedileceği + random isimler + type larını verdim : geçiçi çözüm burası. == full path
-
-                using FileStream fileStream = new(fullPath, FileMode.Create, FileAccess.Write, FileShare.None, 1024 * 1024, useAsync: false); //gerekli stream işlemleri(propert'yler)
-                await file.CopyToAsync(fileStream); // hedef stram'a basacam
-                await fileStream.FlushAsync(); //stream'ı temizliyorum.
-            }
+            _fileService.UploadAsync("resource/product-images", Request.Form.Files);
             return Ok();
         }
     }

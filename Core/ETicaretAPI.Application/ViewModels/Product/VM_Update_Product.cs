@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ETicaretAPI.Application.ViewModel.Product
+namespace ETicaretAPI.Application.ViewModels.Product
 {
     public class VM_Update_Product
     {

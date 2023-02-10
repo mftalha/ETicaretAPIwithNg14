@@ -1,4 +1,4 @@
-﻿using ETicaretAPI.Application.ViewModel.Product;
+﻿using ETicaretAPI.Application.ViewModels.Product;
 using FluentValidation;
 using System;
 using System.Collections.Generic;

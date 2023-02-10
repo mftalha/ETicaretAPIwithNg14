@@ -14,7 +14,7 @@ namespace ETicaretAPI.Persistence
     public static class ServiceRegistration
     {
         //API katmanımda program.cs içinde depending enjection ile ben bu methodu IOC Container'a ekledim o yüzden buraya ne eklersem IOC Containara eklenmiş olacak.
-        public static void AddPersistenceService(this IServiceCollection services) 
+        public static void AddPersistenceServices(this IServiceCollection services) 
         {
             //burada yaptığımız şey oluşturduğumuz dbcontext'i uygulayacağımız veritabanı bağlantısını yapıyoruz. biz postgresql kullanıyoruz bu projede o yüzden. - persistence katmanına sağ tıklayıp Manage Nuget Package ye tıklıyorum. -Browser kısmına tıklayıp Npgsql.EntityFrameworkCore.PostgreSql i aratıyorum ve indiriyorum projeye - options.UseNpgsql görülmesi için sayfsaya : using Microsoft.EntityFrameworkCore; ekliyorum üste artık options.UseNpgsql gözükecektir zaten options.Use yazdığımda devamında tıklıyorum ve içine connection stringi giriyorum.
             services.AddDbContext<ETicaretAPIDbContext>(options => options.UseNpgsql(Configuration.ConnectionString)); // default olarak scope oluşuyordu gelen hatadan dolayı ;; ServiceLifetime.Singleton a çevirdik. == tekrar scop yaptık en son hali
