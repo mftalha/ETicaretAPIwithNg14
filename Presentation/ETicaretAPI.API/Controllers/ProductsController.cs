@@ -100,7 +100,7 @@ namespace ETicaretAPI.API.Controllers
         [HttpPost("[action]")] // birden fazla post methodu olduğu için action ismi ile ayırmamız gerekiyor : şart = bizde kendi adını veriyoruz action kısmına.
         public async Task<IActionResult> Upload()
         {
-            _fileService.UploadAsync("resource/product-images", Request.Form.Files);
+            await _fileService.UploadAsync("resource/product-images", Request.Form.Files);
             return Ok();
         }
     }

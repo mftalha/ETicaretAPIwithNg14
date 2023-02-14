@@ -11,7 +11,6 @@ namespace ETicaretAPI.Application.Services
     {
         // dosya ismi ve path bilgisi döndürsün : nereye kaydettiğimize dair = veritabanına koyarken lazım olabilir.
         Task<List<(string fileName, string path)>> UploadAsync(string path, IFormFileCollection files); // wwwroot'tan sonraki yol : path'de olsun , files = clientten gelen dosya türü galiba.
-        Task<string> FileRenameAsync(string fileName); // dosya isimlendirmek için ayrı bir method oluşturuyorus solid prensiblerinde her iş için ayrı : methot - sınıfta yapma prensibine binaen
         Task<bool> CopyFileAsync(string path, IFormFile file); // dizine kaydetme işlemi için. yine aynı mantık solid prensibine binaen ayrı bir methotta.
     }
 }
