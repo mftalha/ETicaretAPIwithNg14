@@ -10,6 +10,6 @@ namespace ETicaretAPI.Domain.Entities.Common
     { 
         public Guid Id { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set;}
+        virtual public DateTime UpdatedDate { get; set;} //virtual ile işaretliyorum bu sayede istediğim entityde bu propery'i kullanmıyabileceğim. belirli formatta yazark ilgili entity'de
     }
 }
