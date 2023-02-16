@@ -1,0 +1,5 @@
+﻿- IStorege = hangi depolama yeri kullanılacak = azure storage , local storege , aws
+- IStorage Service
+- Storage Service = IStorage Service implement edecek
+
+== böylece : istediğimiz yere kaydedebilecez dosyalamarımızı : başta local'e kaydediyorduk(wwwroot içine) ama biz birden fazla docker servis üzerinde projeyi çalıştırmak istediğimizde : tek bir proje içine gömmek dosyaları : diğer servis üzerinden aynı prıjeye erişim olmıyacak gibi mantıklardan geçersiz bir dosya yükleme mantığı kurduğumuzdan değiştiriyoruz.
