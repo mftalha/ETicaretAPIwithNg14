@@ -1,0 +1,1 @@
+﻿- biz enumları normalde application katmanında tutuyoruz : ama eğerki sadece bir katman için gerekli enum var ise gidip o katmanda o enumu oluşturabiliriz. : çünkü bizim application katmanında tuttugumuz enumlar data ile ilgili enumlar, biz sadece bir katmanda kullnacağımız enumu tüm katmanlardan erişilebilir hale getirmemize gerek yok.
