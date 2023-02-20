@@ -1,7 +1,7 @@
 ﻿using ETicaretAPI.Application.Abstractions.Stroge;
 using ETicaretAPI.Infrastructure.Enums;
-using ETicaretAPI.Infrastructure.Services;
 using ETicaretAPI.Infrastructure.Services.Storage;
+using ETicaretAPI.Infrastructure.Services.Storage.Azure;
 using ETicaretAPI.Infrastructure.Services.Storage.Local;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,10 +14,12 @@ namespace ETicaretAPI.Infrastructure
             serviceCollection.AddScoped<IStorageService, StorageService>(); //IStorageService karşılık hangi servisin gideceğini belirtiyoruz.
         }
         // where T : class, IStorage  == IStorage'den türecek ama class olacak.
-        public static void AddStorage<T>(this IServiceCollection serviceCollection) where T : class, IStorage  
+        public static void AddStorage<T>(this IServiceCollection serviceCollection) where T : Storage, IStorage  
         {
             serviceCollection.AddScoped<IStorage, T>();
+            // burda t verdiğim için herhangi bir bağımlılık yok : istersem local olacak , istersem azure olacak gibi. : burayı değiştirmem gerekmiyecek.
         }
+        // aşşağısı kirli kod aslında her yeni eklemede gelip enumda değişim yapmam gerekecek.
         public static void AddStorage(this IServiceCollection serviceCollection, StorageType storageType)
         {
             switch(storageType)
@@ -26,6 +28,7 @@ namespace ETicaretAPI.Infrastructure
                     serviceCollection.AddScoped<IStorage, LocalStorage>();
                     break;
                 case StorageType.Azure:
+                    serviceCollection.AddScoped<IStorage, AzureStorage>();
                     break;
                 case StorageType.AWS:
                     break;

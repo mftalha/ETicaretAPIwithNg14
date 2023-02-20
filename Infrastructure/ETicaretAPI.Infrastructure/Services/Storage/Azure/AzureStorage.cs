@@ -11,34 +11,39 @@ using System.Threading.Tasks;
 
 namespace ETicaretAPI.Infrastructure.Services.Storage.Azure
 {
-    public class AzureStorage : IAzureStorage
+    public class AzureStorage : Storage, IAzureStorage
     {
         readonly BlobServiceClient _blobServiceClient; //ilgili azure acocountuna bağlanmamıza sağlarken
         BlobContainerClient _blobContainerClient; //hedef account üzerinde ilgili dosya işlemlerini yapmamızı sağlıyor.
-        public AzureStorage(IConfiguration configuration)
+        public  AzureStorage(IConfiguration configuration)
         {
             _blobServiceClient = new(configuration["Storage:Azure"]);
         }
-        public Task DeleteAsync(string ContainerName, string fileName)
+        public async Task DeleteAsync(string containerName, string fileName)
         {
-            throw new NotImplementedException();
+            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(fileName);
+            await blobClient.DeleteAsync();
         }
 
-        public List<string> GetFiles(string ContainerName)
+        public List<string> GetFiles(string containerName)
         {
-            throw new NotImplementedException();
+            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            return _blobContainerClient.GetBlobs().Select(b => b.Name).ToList(); 
         }
 
-        public bool HasFile(string ContainerName, string fileName)
+        //dosya mevcutmu
+        public bool HasFile(string containerName, string fileName)
         {
-            throw new NotImplementedException();
+            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            return _blobContainerClient.GetBlobs().Any(b => b.Name == fileName);
         }
 
         //parametre isimleri değişebilir ama tappıl içindeki değişken isimleri de interfaceden gelen metotlarda.
-        public async Task<List<(string fileName, string pathOrContainerName)>> UploadAsync(string ContainerName, IFormFileCollection files)
+        public async Task<List<(string fileName, string pathOrContainerName)>> UploadAsync(string containerName, IFormFileCollection files)
         {
             //hangi container'da çalışacağımı belirtiypruz.
-            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
+            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
             await _blobContainerClient.CreateIfNotExistsAsync(); // Container yok sa : ilgili container'ı oluştur.
             // Blob Container'ına erişim izni veriyoruz.
             await _blobContainerClient.SetAccessPolicyAsync(PublicAccessType.BlobContainer);
@@ -46,10 +51,15 @@ namespace ETicaretAPI.Infrastructure.Services.Storage.Azure
             List<(string fileName, string pathOrContainerName)> datas = new();
             foreach (IFormFile file in files) //gelen files'lar arasında dolaş.
             {
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(file.Name);//Göndereceğim dosyanın adı bu.
-                // dosyayı akışa çevir göder azure'ye
+
+                string fileNewName = await FileRenameAsync(containerName, file.Name, HasFile);
+
+                BlobClient blobClient = _blobContainerClient.GetBlobClient(fileNewName);//Göndereceğim dosyanın adı bu.
+                // dosyayı stream çevir göder azure'ye göndermek için
                 await blobClient.UploadAsync(file.OpenReadStream());
+                datas.Add((fileNewName, containerName)); //azureye gönder
             }
+            return datas;
         }
     }
 }
