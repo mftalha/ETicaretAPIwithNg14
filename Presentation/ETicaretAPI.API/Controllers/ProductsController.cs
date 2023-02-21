@@ -116,45 +116,34 @@ namespace ETicaretAPI.API.Controllers
         }
 
         [HttpPost("[action]")] // birden fazla post methodu olduğu için action ismi ile ayırmamız gerekiyor : şart = bizde kendi adını veriyoruz action kısmına.
-        public async Task<IActionResult> Upload()
+        public async Task<IActionResult> Upload(string id)
         {
-            var datas = await _storageService.UploadAsync("files", Request.Form.Files);
-            //var datas = await _fileService.UploadAsync("resource/files", Request.Form.Files);
+            List<(string fileName, string pathOrContainerName)> result = await _storageService.UploadAsync("photo-images", Request.Form.Files);
 
-            
-            await _productImageFileWriteRepository.AddRangeAsync(datas.Select(d => new ProductImageFile()
+            Product product = await _productReadRepository.GetByIdAsync(id);
+
+            /* : resim eklemede bunu da kullanabiliyoruz aşşağıdaki yapıya alternatif
+            foreach(var r in result)
             {
-                FileName = d.fileName,
-                Path = d.pathOrContainerName,
-                Storage = _storageService.StrogeName
+                product.ProductImageFiles.Add(new()
+                {
+                    FileName = r.fileName,
+                    Path = r.pathOrContainerName,
+                    Storage = _storageService.StrogeName,
+                    Products = new List<Product>() { product}
+                });
+            }
+            */
+            
+            await _productImageFileWriteRepository.AddRangeAsync(result.Select(r => new ProductImageFile
+            {
+                FileName = r.fileName,
+                Path = r.pathOrContainerName,
+                Storage = _storageService.StrogeName,
+                Products = new List<Product>() { product }
             }).ToList());
+            
             await _productImageFileWriteRepository.SaveAsync();
-            
-
-            /*
-            await _invoiceFileWriteRepository.AddRangeAsync(datas.Select(d => new InvoiceFile()
-            {
-                FileName = d.fileName,
-                Path = d.path,
-                Price = new Random().Next()
-            }).ToList());
-            await _invoiceFileWriteRepository.SaveAsync();
-            */
-
-           /* 
-            await _fileWriteRepository.AddRangeAsync(datas.Select(d => new ETicaretAPI.Domain.Entities.File()
-            {
-                FileName = d.fileName,
-                Path = d.path,
-            }).ToList());
-            await _fileWriteRepository.SaveAsync();
-            */
-
-            /*
-            var d1 =  _fileReadRepository.GetAll(false); // base class oldugundan tüm verileri getirir
-            var d2 = _invoiceFileReadRepository.GetAll(false); // sadece invoiceFile dosyalarını getirir
-            var d3 = _productImageFileReadRepository.GetAll(false); // productImage dosyalarını getirir.
-            */
             return Ok();
         }
     }

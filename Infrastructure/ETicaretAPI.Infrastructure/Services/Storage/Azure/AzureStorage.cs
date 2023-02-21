@@ -57,7 +57,7 @@ namespace ETicaretAPI.Infrastructure.Services.Storage.Azure
                 BlobClient blobClient = _blobContainerClient.GetBlobClient(fileNewName);//Göndereceğim dosyanın adı bu.
                 // dosyayı stream çevir göder azure'ye göndermek için
                 await blobClient.UploadAsync(file.OpenReadStream());
-                datas.Add((fileNewName, containerName)); //azureye gönder
+                datas.Add((fileNewName, $"{containerName}/{fileNewName}")); //azureye gönder
             }
             return datas;
         }
