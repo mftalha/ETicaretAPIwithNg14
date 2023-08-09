@@ -1,8 +1,8 @@
+using ETicaretAPI.Application;
 using ETicaretAPI.Application.Validators.Products;
 using ETicaretAPI.Infrastructure;
 using ETicaretAPI.Infrastructure.Filters;
 using ETicaretAPI.Infrastructure.Services.Storage.Azure;
-using ETicaretAPI.Infrastructure.Services.Storage.Local;
 using ETicaretAPI.Persistence;
 using FluentValidation.AspNetCore;
 
@@ -15,6 +15,9 @@ builder.Services.AddPersistenceServices();
 builder.Services.AddInfrastructureServices();
 //builder.Services.AddStorage(StorageType.Azure); // paremetreye ne verirsem onun ile ilgili depolama iþkeminbi yapsýn : azure storage , aws , local storage 
 //builder.Services.AddStorage<LocalStorage>(); //Mimari artýk storage iþlemlerini : LocalStorageye göre yapacaktýr.
+
+builder.Services.AddApplicationServices();
+
 builder.Services.AddStorage<AzureStorage>(); 
 
 //cors politikalarý için servis oluþturma => app.UseCors(); diye aþþagýdan eklemeyi unutmamalýyým
