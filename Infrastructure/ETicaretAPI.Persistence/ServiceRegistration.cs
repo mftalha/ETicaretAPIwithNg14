@@ -1,14 +1,10 @@
 ﻿using ETicaretAPI.Application.Repositories;
 using ETicaretAPI.Application.Repositories.File;
+using ETicaretAPI.Domain.Entities.Identity;
 using ETicaretAPI.Persistence.Contexts;
 using ETicaretAPI.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ETicaretAPI.Persistence
 {
@@ -32,6 +28,20 @@ namespace ETicaretAPI.Persistence
 
             //bunları toplu eklemek için bir yöntem varmış kullanılabilir.
             //scope = bir request esnasında herhangi bir nesnenin bir örneğini oluşturur ondan döndürür = her yeni bir requestte yeni bir nesne döndürecektir. scope = kullanıyorduk kaldırdık hatadan dolayı =  services.AddScoped
+
+            #region Identity
+            //services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<ETicaretAPIDbContext>(); // burası default configurasyonlar sağlıyor : password minumum 6 karekter olmalı , özel karekter bulunmalı pass'da : username: mail olmalı gibi
+
+            services.AddIdentity<AppUser, AppRole>(options =>
+            {
+                options.Password.RequiredLength = 3;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+
+            }).AddEntityFrameworkStores<ETicaretAPIDbContext>();
+            #endregion
 
             services.AddScoped<ICustomerReadRepository, CustomerReadRepository>();
             services.AddScoped<ICustomerWriteRepository, CustomerWriteRepository>();

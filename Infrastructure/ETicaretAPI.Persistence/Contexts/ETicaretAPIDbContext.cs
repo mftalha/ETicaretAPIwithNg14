@@ -1,15 +1,12 @@
 ﻿using ETicaretAPI.Domain.Entities;
 using ETicaretAPI.Domain.Entities.Common;
+using ETicaretAPI.Domain.Entities.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ETicaretAPI.Persistence.Contexts //bu classın amacı sql deki tabloların proğram içindeki karşılığı ?
 {
-    public class ETicaretAPIDbContext : DbContext // mirası Microsoft.EntityFrameworkCore'dan alıyoruz : ad önemli değil miras almamız önemli 
+    public class ETicaretAPIDbContext : IdentityDbContext<AppUser, AppRole, string> //DbContext // mirası Microsoft.EntityFrameworkCore'dan alıyoruz : ad önemli değil miras almamız önemli 
     {
         public ETicaretAPIDbContext(DbContextOptions options) : base(options) { } //ctrl+. diyerek bu contractırı oluşturuyorum IOC Containerda doldurulacak : bu contstractırı oluşturmaz sam süreçte hata alırım.
 
