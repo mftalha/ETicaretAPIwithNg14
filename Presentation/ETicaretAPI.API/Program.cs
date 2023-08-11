@@ -1,43 +1,67 @@
-using ETicaretAPI.Application;
+ï»¿using ETicaretAPI.Application;
 using ETicaretAPI.Application.Validators.Products;
 using ETicaretAPI.Infrastructure;
 using ETicaretAPI.Infrastructure.Filters;
 using ETicaretAPI.Infrastructure.Services.Storage.Azure;
 using ETicaretAPI.Persistence;
 using FluentValidation.AspNetCore;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Apı katmanından Persistence katmanına erişim için yazdığımız methodu depending enjectiona enjecte ediyoruz. = tabi bunun için API katmanına Persistence katmanını referans olarak veriyoruz.
+//ApÃ½ katmanÃ½ndan Persistence katmanÃ½na eriÃ¾im iÃ§in yazdÃ½Ã°Ã½mÃ½z methodu depending enjectiona enjecte ediyoruz. = tabi bunun iÃ§in API katmanÃ½na Persistence katmanÃ½nÃ½ referans olarak veriyoruz.
 builder.Services.AddPersistenceServices();
-//Apı katmanından Infrastructure katmanına erişim için yazdığımız methodu depending enjectiona enjecte ediyoruz. =  bunun için API katmanına Infrastructure katmanını referans olarak veriyoruz.
+//ApÃ½ katmanÃ½ndan Infrastructure katmanÃ½na eriÃ¾im iÃ§in yazdÃ½Ã°Ã½mÃ½z methodu depending enjectiona enjecte ediyoruz. =  bunun iÃ§in API katmanÃ½na Infrastructure katmanÃ½nÃ½ referans olarak veriyoruz.
 builder.Services.AddInfrastructureServices();
-//builder.Services.AddStorage(StorageType.Azure); // paremetreye ne verirsem onun ile ilgili depolama işkeminbi yapsın : azure storage , aws , local storage 
-//builder.Services.AddStorage<LocalStorage>(); //Mimari artık storage işlemlerini : LocalStorageye göre yapacaktır.
+//builder.Services.AddStorage(StorageType.Azure); // paremetreye ne verirsem onun ile ilgili depolama iÃ¾keminbi yapsÃ½n : azure storage , aws , local storage 
+//builder.Services.AddStorage<LocalStorage>(); //Mimari artÃ½k storage iÃ¾lemlerini : LocalStorageye gÃ¶re yapacaktÃ½r.
 
 builder.Services.AddApplicationServices();
 
 builder.Services.AddStorage<AzureStorage>(); 
 
-//cors politikaları için servis oluşturma => app.UseCors(); diye aşşagıdan eklemeyi unutmamalıyım
+//cors politikalarÃ½ iÃ§in servis oluÃ¾turma => app.UseCors(); diye aÃ¾Ã¾agÃ½dan eklemeyi unutmamalÃ½yÃ½m
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins("http://localhost:4200", "https://localhost:4200").AllowAnyHeader().AllowAnyMethod()
-//bu adresten gelen istekleri kabul et =  cros politikası için yazıldı. == bu adres dışından gelen istekler erişemez.
-//policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin() //böyle dediğimde her gelen istek atabilecek belirli bir url sınırı koymadık daha.
-)); //2 seçenek var sitelere göre veya default olarak projeye göre
+//bu adresten gelen istekleri kabul et =  cros politikasÃ½ iÃ§in yazÃ½ldÃ½. == bu adres dÃ½Ã¾Ã½ndan gelen istekler eriÃ¾emez.
+//policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin() //bÃ¶yle dediÃ°imde her gelen istek atabilecek belirli bir url sÃ½nÃ½rÃ½ koymadÃ½k daha.
+)); //2 seÃ§enek var sitelere gÃ¶re veya default olarak projeye gÃ¶re
 
 
 
-//controllar mekanizmasının bildiğimiz gibi çalışmasını sağlayan servis.
+//controllar mekanizmasÃ½nÃ½n bildiÃ°imiz gibi Ã§alÃ½Ã¾masÃ½nÃ½ saÃ°layan servis.
 //builder.Services.AddControllers()
-builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>()) //paremetre olarak  verdiğim yapı sayesinde artık : validationları ben kontrol edecem ve sonuçlara göre istediğim gibi dönüş sağlayabileceğim. ValidationFilter servisi ile.
-    .AddFluentValidation(configuration => configuration.RegisterValidatorsFromAssemblyContaining<CreateProductValidator>()) // AddFluentValidation : validation işlemleri için kullandığımız kütüphaneydi : nuget'ten indirip projemize dahil etmiştik application katmanında. ilgili validationları : ilgili methodlara bağladığımızı artık veri işlemlerinde validationlarıda kontrol etmesi gerektiğini projeye burada veriyoruz. - RegisterValidatorsFromAssemblyContaining methodunu kullanma sebimiz ise her oluşturduğumuz validation modelini burda teker teker tanımlamamak için CreateProductValidator diye 1 tane validationun yolunu veriyoruz : ve artık bundan sonra diğer validationlarıda kendisi o dosya yolundan alacaktır. : bizim teker teker her seferinde vermemize gerek yok artık.
-    .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true); // burası sayesinde mvc nin gelen veriler üzerinden filtrelemeye uymayan yapıları otomatik yakalamasını kapattık. : biz yakalıyacaz controlalrda : şartlar ile.
+builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>()) //paremetre olarak  verdiÃ°im yapÃ½ sayesinde artÃ½k : validationlarÃ½ ben kontrol edecem ve sonuÃ§lara gÃ¶re istediÃ°im gibi dÃ¶nÃ¼Ã¾ saÃ°layabileceÃ°im. ValidationFilter servisi ile.
+    .AddFluentValidation(configuration => configuration.RegisterValidatorsFromAssemblyContaining<CreateProductValidator>()) // AddFluentValidation : validation iÃ¾lemleri iÃ§in kullandÃ½Ã°Ã½mÃ½z kÃ¼tÃ¼phaneydi : nuget'ten indirip projemize dahil etmiÃ¾tik application katmanÃ½nda. ilgili validationlarÃ½ : ilgili methodlara baÃ°ladÃ½Ã°Ã½mÃ½zÃ½ artÃ½k veri iÃ¾lemlerinde validationlarÃ½da kontrol etmesi gerektiÃ°ini projeye burada veriyoruz. - RegisterValidatorsFromAssemblyContaining methodunu kullanma sebimiz ise her oluÃ¾turduÃ°umuz validation modelini burda teker teker tanÃ½mlamamak iÃ§in CreateProductValidator diye 1 tane validationun yolunu veriyoruz : ve artÃ½k bundan sonra diÃ°er validationlarÃ½da kendisi o dosya yolundan alacaktÃ½r. : bizim teker teker her seferinde vermemize gerek yok artÃ½k.
+    .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true); // burasÃ½ sayesinde mvc nin gelen veriler Ã¼zerinden filtrelemeye uymayan yapÃ½larÃ½ otomatik yakalamasÃ½nÃ½ kapattÃ½k. : biz yakalÃ½yacaz controlalrda : Ã¾artlar ile.
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+#region jwt doÄŸrulama
+// AddAuthentication(JwtBearerDefaults.AuthenticationScheme) : default olarak shema alÄ±yoru bu
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+	////"Admin" : schema ismim => Authentication schema yaptÄ±k
+	.AddJwtBearer("Admin", options => // bu uygulamaya token geliyorsa bu token'Ä± doÄŸrularken jwt olduÄŸunu bil
+    {   // Bu jwt'yi doÄŸrularken burdaki konfigurasyonlar Ã¼zerinden doÄŸrula 
+        options.TokenValidationParameters = new()
+        {
+            ValidateAudience = true, //(kitle)OluÅŸturulacak token deÄŸerini kimlerin/hangi originlerin/sitelerin kullanacÄ±ÄŸÄ±nÄ± belirlediÄŸimiz deÄŸerdir. => www. ... .com
+            ValidateIssuer = true, //(ihraÃ§Ã§Ä±) OluÅŸturulacak token deÄŸerini kimin daÄŸÄ±ttÄ±nÄ± ifade edeceÄŸimiz alandÄ±r. => www.myapi.com
+            ValidateLifetime = true, //OluÅŸturulan token deÄŸerininin sÃ¼resini kontrol edecek doÄŸrulamdÄ±r. : sÃ¼resi geÃ§timi geÃ§medimi ?
+            ValidateIssuerSigningKey = true, // Ãœretilecek token deÄŸerinin uygulamamÄ±za ait olduÄŸunu ifade eden seciry key verisinin doÄŸrulanmasÄ±dÄ±r. => Ã¼sttekiler tahmin edilebilir olsada bu deÄŸeri Ã§ok farklÄ± koyup token deÄŸerinin deÄŸerini daha fazla tahmin edilemez yapÄ±p token gÃ¼venliÄŸini saÄŸlÄ±yabiliriz.
+
+            // hangi deÄŸerler ile doÄŸrulÅŸamasÄ± saÄŸlanacak yukarÄ±daki talep edilenlerin cevabÄ±.
+            ValidAudience = builder.Configuration["Token:Audience"],
+            ValidIssuer = builder.Configuration["Token:Issuer"],
+			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"]))
+		};
+    });
+
+#endregion
 
 var app = builder.Build();
 
@@ -48,14 +72,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseStaticFiles(); // api içinde new folder diyip : ismine wwwroot dediğimde : direk dünya simgeli bir dosya oluşacak : bu özel bi dizin ve bunun için program.cs de bu kısmı tanımlamam gerekli. == tarayıcıdan url kısmından bu klasörün içindkei dosyalara erişilemez sadece kod içinden erişilebiliyor : statik olarak tutuluyorlar : sunucuda tutuluyor dosyalarımız güvenli bir şekilde : wwwroot içinde tutuyoruz.. 
+app.UseStaticFiles(); // api iÃ§inde new folder diyip : ismine wwwroot dediÃ°imde : direk dÃ¼nya simgeli bir dosya oluÃ¾acak : bu Ã¶zel bi dizin ve bunun iÃ§in program.cs de bu kÃ½smÃ½ tanÃ½mlamam gerekli. == tarayÃ½cÃ½dan url kÃ½smÃ½ndan bu klasÃ¶rÃ¼n iÃ§indkei dosyalara eriÃ¾ilemez sadece kod iÃ§inden eriÃ¾ilebiliyor : statik olarak tutuluyorlar : sunucuda tutuluyor dosyalarÃ½mÃ½z gÃ¼venli bir Ã¾ekilde : wwwroot iÃ§inde tutuyoruz.. 
 
-//yukarıda belirlediğim cors politikasınını çağoırıyoruz.
+//yukarÃ½da belirlediÃ°im cors politikasÃ½nÃ½nÃ½ Ã§aÃ°oÃ½rÃ½yoruz.
 app.UseCors();
 //
 
 app.UseHttpsRedirection();
 
+#region jwt 
+app.UseAuthentication();
+#endregion
 app.UseAuthorization();
 
 app.MapControllers();

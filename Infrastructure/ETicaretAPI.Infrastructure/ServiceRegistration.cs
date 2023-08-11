@@ -1,8 +1,10 @@
 ﻿using ETicaretAPI.Application.Abstractions.Stroge;
+using ETicaretAPI.Application.Abstractions.Token;
 using ETicaretAPI.Infrastructure.Enums;
 using ETicaretAPI.Infrastructure.Services.Storage;
 using ETicaretAPI.Infrastructure.Services.Storage.Azure;
 using ETicaretAPI.Infrastructure.Services.Storage.Local;
+using ETicaretAPI.Infrastructure.Services.Token;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ETicaretAPI.Infrastructure
@@ -12,6 +14,7 @@ namespace ETicaretAPI.Infrastructure
         public static void AddInfrastructureServices(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddScoped<IStorageService, StorageService>(); //IStorageService karşılık hangi servisin gideceğini belirtiyoruz.
+            serviceCollection.AddScoped<ITokenHandler, TokenHandler>();
         }
         // where T : class, IStorage  == IStorage'den türecek ama class olacak.
         public static void AddStorage<T>(this IServiceCollection serviceCollection) where T : Storage, IStorage  

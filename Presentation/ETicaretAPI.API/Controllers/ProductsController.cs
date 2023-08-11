@@ -7,6 +7,7 @@ using ETicaretAPI.Application.Features.Queries.Product.GetAllProduct;
 using ETicaretAPI.Application.Features.Queries.Product.GetByIdProduct;
 using ETicaretAPI.Application.Features.Queries.ProductImageFile.GetProductImages;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -15,7 +16,8 @@ namespace ETicaretAPI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-
+[Authorize(AuthenticationSchemes = "Admin")] // bu controllerdaki end-pointlerde yetki kontrolü yapacak : eğerki yetkisi yok ise 401 döndüreccektir.
+// istek atabilmek için => sorgunun header kısmında => Authorization key'ine karşılık => users cotrollerıbndaki login endpoint'inden gelen token'ı alıyoruz =<  Bearer Tokenı yapştırıyoruz(Bearer yazısından sonra 1 boşluk var) 
 public class ProductsController : ControllerBase
 {
 
