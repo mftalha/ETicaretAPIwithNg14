@@ -2,5 +2,5 @@
 
 public  interface ITokenHandler
 {
-	DTOs.Token CreateAccessToken(int minute); // token = jvt = access aynı şeyler
+	DTOs.Token CreateAccessToken(int second); // token = jvt = access aynı şeyler
 }

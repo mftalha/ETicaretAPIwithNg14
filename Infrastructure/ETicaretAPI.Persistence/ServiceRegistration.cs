@@ -1,8 +1,11 @@
-﻿using ETicaretAPI.Application.Repositories;
+﻿using ETicaretAPI.Application.Abstractions.Services;
+using ETicaretAPI.Application.Abstractions.Services.Authentications;
+using ETicaretAPI.Application.Repositories;
 using ETicaretAPI.Application.Repositories.File;
 using ETicaretAPI.Domain.Entities.Identity;
 using ETicaretAPI.Persistence.Contexts;
 using ETicaretAPI.Persistence.Repositories;
+using ETicaretAPI.Persistence.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -57,6 +60,11 @@ namespace ETicaretAPI.Persistence
             services.AddScoped<IProductImageFileWriteRepository, ProductImageFileWriteRepository>();
 
             //context nesnesini default olarak ServiceLefetime.Scope eklediğinden Repostory servislerini aynı yaşam döngüsünde eklememizin yararı olurmuş. = ondan AddScoped da ekliyoruz.
+
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IExternalAuthentication, AuthService>();
+            services.AddScoped<IInternalAuthentication, AuthService>();
 
         }
     }

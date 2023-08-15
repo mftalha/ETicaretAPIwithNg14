@@ -24,25 +24,4 @@ public class UsersController : ControllerBase
         CreateUserCommandResponse response = await _mediator.Send(createUserCommandRequest);
         return Ok(response);
     }
-
-    [HttpPost("[action]")] // method action ismi ne ise onu al action ismi olarak gibi birşey.
-    public async Task<IActionResult> Login(LoginUserCommandRequest loginUserCommandRequest)
-    {
-        LoginUserCommandResponse response = await _mediator.Send(loginUserCommandRequest);
-        return Ok(response);
-    }
-
-    [HttpPost("google-login")]
-    public async Task<IActionResult> GoogleLogin(GoogleLoginCommandReqeust googleLoginCommandReqeust)
-    {
-        GoogleLoginCommandResponse response = await _mediator.Send(googleLoginCommandReqeust);
-        return Ok(response);
-    }
-
-    [HttpPost("facebook-login")]
-    public async Task<IActionResult> FacebookLogin(FacebookLoginCommandReqeust facebookLoginCommandReqeust)
-    {
-        FacebookLoginCommandResponse response = await _mediator.Send(facebookLoginCommandReqeust);
-        return Ok(response);
-    }
 }

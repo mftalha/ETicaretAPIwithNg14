@@ -1,48 +1,34 @@
-﻿using ETicaretAPI.Application.Exceptions;
+﻿using ETicaretAPI.Application.Abstractions.Services;
+using ETicaretAPI.Application.DTOs.User;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 
 namespace ETicaretAPI.Application.Features.Commands.AppUser.CreateUser;
 
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommandRequest, CreateUserCommandResponse>
 {
-    readonly private UserManager<Domain.Entities.Identity.AppUser> _userManager;
+    readonly private IUserService _userService;
 
-    public CreateUserCommandHandler(UserManager<Domain.Entities.Identity.AppUser> userManager)
+    public CreateUserCommandHandler(IUserService userService)
     {
-        _userManager = userManager;
+        _userService = userService;
     }
 
     public async Task<CreateUserCommandResponse> Handle(CreateUserCommandRequest request, CancellationToken cancellationToken)
     {
-        // UserManager => Kullanıcı işlemlerinden sorumlu servis : bu servisten dolayı biz user için repository oluşturmuyoruz çünkü arka planda zaten mevcut.
-
-        IdentityResult result = await _userManager.CreateAsync(new()
+        CreateUserResponseDTO response = await _userService.CreateAsync(new()
         {
-            Id = Guid.NewGuid().ToString(),
-            UserName= request.UserName,
             Email= request.Email,
             NameSurname= request.NameSurname,
-        },request.Password);
+            Password= request.Password,
+            PasswordConfirm = request.PasswordConfirm,
+            UserName= request.UserName
+        });
 
-        CreateUserCommandResponse response = new() { Succeeded = result.Succeeded };
-
-        if (result.Succeeded)
-             response.Message = "Kullanıcı başarıyla oluşturulmuştur.";
-        else
+        return new()
         {
-            foreach( var error in result.Errors)
-                response.Message += $"{error.Code} - {error.Description}\n";
-        }
-
-        return response;
-
-        //result.Errors.First(). ... => Burda hata varsa bize hatayıda döndürebiliyor.
-        //throw new UserCreateFailedException();
-
-
-
-
+            Message= response.Message,
+            Succeeded = response.Succeeded
+        };  
     }
 }
