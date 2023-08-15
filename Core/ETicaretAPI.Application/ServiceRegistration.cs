@@ -11,5 +11,6 @@ public static class ServiceRegistration
         //ServiceRegistration namespace'i altındaki hangler'ları bul ve kullan hepsini.
         //collection.AddMediatR(typeof(ServiceRegistration));
         collection.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+        collection.AddHttpClient(); // bu servisi uygulamaya yüklüyoruz
     }
 }
