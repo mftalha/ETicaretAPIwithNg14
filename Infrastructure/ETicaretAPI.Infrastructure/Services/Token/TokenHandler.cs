@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ETicaretAPI.Infrastructure.Services.Token;
@@ -26,7 +27,7 @@ public class TokenHandler : ITokenHandler
 		SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
 		//Oluşturulacak token ayarlarını veriyoruz. //{expiration : süre sonu} 
-		token.Expiration = DateTime.UtcNow.AddMinutes(second);
+		token.Expiration = DateTime.UtcNow.AddSeconds(second);
 		JwtSecurityToken securityToken = new(
 			audience: _configuration["Token:Audience"],
 			issuer: _configuration["Token:Issuer"],
@@ -38,6 +39,20 @@ public class TokenHandler : ITokenHandler
 		//Token oluturucu sınıfından bir örnek alalım.
 		JwtSecurityTokenHandler tokenHandler = new();
 		token.AccessToken = tokenHandler.WriteToken(securityToken);
+
+		token.RefreshToken = CreateRefreshToken();
+
 		return token;
 	}
+
+    public string CreateRefreshToken()
+    {
+		byte[] number = new byte[32];
+
+		// scoplar içinde using'i kullanmadığımzıda(eskiden direk scoplar içinde kullanılacak.) üsttei scop kapanınca yok edilecek ilgili nesne bellekten. : CreateRefreshToken tagı kapandığında silinecek şimdi.
+        using RandomNumberGenerator random = RandomNumberGenerator.Create();
+		random.GetBytes(number);
+		return Convert.ToBase64String(number); // random değer üretildi ve stringe dönüştürülüp döndürüldü.
+
+    }
 }

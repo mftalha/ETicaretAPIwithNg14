@@ -3,11 +3,10 @@ using ETicaretAPI.Application.Abstractions.Token;
 using ETicaretAPI.Application.DTOs;
 using ETicaretAPI.Application.DTOs.Facebook;
 using ETicaretAPI.Application.Exceptions;
-using ETicaretAPI.Application.Features.Commands.AppUser.LoginUser;
 using ETicaretAPI.Domain.Entities.Identity;
 using Google.Apis.Auth;
-using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
@@ -20,15 +19,18 @@ public class AuthService : IAuthService
     readonly private UserManager<Domain.Entities.Identity.AppUser> _userManager;
     readonly ITokenHandler _tokenHandler;
     readonly SignInManager<Domain.Entities.Identity.AppUser> _signInManager;
+    readonly IUserService _userService;
 
-    public AuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration, UserManager<Domain.Entities.Identity.AppUser> userManager, ITokenHandler tokenHandler, SignInManager<AppUser> signInManager)
+    public AuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration, UserManager<Domain.Entities.Identity.AppUser> userManager, ITokenHandler tokenHandler, SignInManager<AppUser> signInManager, IUserService userService)
     {
         _httpClient = httpClientFactory.CreateClient();
         _configuration = configuration;
         _userManager = userManager;
         _tokenHandler = tokenHandler;
         _signInManager = signInManager;
+        _userService = userService;
     }
+    // CreateUserExternalAsync => FacebookLoginAsync, GoogleLoginAsync için ortak işlemler için
     async Task<Token> CreateUserExternalAsync(AppUser user, string email, string name, UserLoginInfo info, int accessTokenLifeTime)
     {
         bool result = user != null;
@@ -56,6 +58,8 @@ public class AuthService : IAuthService
             await _userManager.AddLoginAsync(user, info);
 
             Token token = _tokenHandler.CreateAccessToken(accessTokenLifeTime);
+            await _userService.UpdateRefreshToken(token.RefreshToken, user, token.Expiration, 15);
+
             return token;
         }
         throw new Exception("Invalid external authentication.");
@@ -80,7 +84,6 @@ public class AuthService : IAuthService
             string userInfoResponse = await _httpClient.GetStringAsync($"https://graph.facebook.com/me?fields=email,name&access_token={authToken}");
 
             FacebookUserInfoResponseDTO? userInfo = JsonSerializer.Deserialize<FacebookUserInfoResponseDTO>(userInfoResponse);
-
 
             var info = new UserLoginInfo("FACEBOOK", validation.Data.UserId, "FACEBOOK");
 
@@ -128,6 +131,7 @@ public class AuthService : IAuthService
         {
             // Yetkileri belirlememiz gerekiyor
             Token token = _tokenHandler.CreateAccessToken(accessTokenLifeTime);
+            await _userService.UpdateRefreshToken(token.RefreshToken, user, token.Expiration, 15);
             return  token;
         }
         //return new LoginUserErrorCommandResponse()
@@ -135,5 +139,18 @@ public class AuthService : IAuthService
         //	Message = "Kullanıcı adı veya şifre hatalı..."
         //};
         throw new AuthenticationErrorException(); //üsttekide olur bu da olur.
+    }
+
+    public async Task<Token> RefreshTokenLoginAsync(string refreshToken)
+    {
+        AppUser? user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+        if (user != null && user?.RefreshTokenEndDate > DateTime.UtcNow)
+        {
+            Token token = _tokenHandler.CreateAccessToken(15);
+            await _userService.UpdateRefreshToken(token.RefreshToken, user, token.Expiration, 15);
+            return token;
+        }
+        else
+            throw new NotFoundUserException();
     }
 }
