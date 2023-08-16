@@ -1,7 +1,10 @@
-﻿namespace ETicaretAPI.Application.Abstractions.Token;
+﻿using ETicaretAPI.Domain.Entities.Identity;
+
+namespace ETicaretAPI.Application.Abstractions.Token;
 
 public  interface ITokenHandler
 {
-	DTOs.Token CreateAccessToken(int second); // token = jvt = access aynı şeyler
+    // , AppUser appUser => logg lamada kullanılmak üzere eklendi.
+    DTOs.Token CreateAccessToken(int second, AppUser appUser); // token = jvt = access aynı şeyler
 	string CreateRefreshToken();
 }

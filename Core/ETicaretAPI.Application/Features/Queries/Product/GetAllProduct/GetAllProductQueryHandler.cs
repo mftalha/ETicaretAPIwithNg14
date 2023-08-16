@@ -1,18 +1,22 @@
 ﻿using ETicaretAPI.Application.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace ETicaretAPI.Application.Features.Queries.Product.GetAllProduct;
 
 public class GetAllProductQueryHandler : IRequestHandler<GetAllProductQueryRequest, GetAllProductQueryResponse>
 {
     readonly private IProductReadRepository _productReadRepository;
-    public GetAllProductQueryHandler(IProductReadRepository productReadRepository)
+    readonly ILogger<GetAllProductQueryHandler> _logger;
+    public GetAllProductQueryHandler(IProductReadRepository productReadRepository, ILogger<GetAllProductQueryHandler> logger)
     {
         _productReadRepository = productReadRepository;
+        _logger = logger;
     }
 
     public async Task<GetAllProductQueryResponse> Handle(GetAllProductQueryRequest request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Get all product");
         var totalCount = _productReadRepository.GetAll(false).Count();
         //skip ile kaçıncı veriye kadar alınacağını söylüyorum mesela 15 ; take ile de 5 tane alınacaksa = 10 - 15 arası veriler getiriliyor gibi bi mantık anlıyorum.
         var products = _productReadRepository.GetAll(false).Skip(request.Page * request.Size).Take(request.Size).Select(p => new

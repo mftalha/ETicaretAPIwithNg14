@@ -1,4 +1,5 @@
-﻿using ETicaretAPI.Application;
+﻿using ETicaretAPI.API.Configurations.ColumnWriters;
+using ETicaretAPI.Application;
 using ETicaretAPI.Application.Validators.Products;
 using ETicaretAPI.Infrastructure;
 using ETicaretAPI.Infrastructure.Filters;
@@ -6,7 +7,13 @@ using ETicaretAPI.Infrastructure.Services.Storage.Azure;
 using ETicaretAPI.Persistence;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Context;
+using Serilog.Core;
+using Serilog.Sinks.PostgreSQL;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +34,48 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.Wi
 //bu adresten gelen istekleri kabul et =  cros politikasý için yazýldý. == bu adres dýþýndan gelen istekler eriþemez.
 //policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin() //böyle dediðimde her gelen istek atabilecek belirli bir url sýnýrý koymadýk daha.
 )); //2 seçenek var sitelere göre veya default olarak projeye göre
+
+
+#region Serilog - Postgresql
+//UseSerilog'u çağırdığımızda builderdaki log mekanizması ile değiştirmiş oluyoruz
+
+//Loger =>  using Serilog.Core; dan gelmeli
+Logger log = new LoggerConfiguration()
+    .WriteTo.Console() // Consola loglama yap
+    .WriteTo.File("logs/log.txt") // logs/log.txt dosyasını yoksa oluştur buraya loglama yap
+                                  //PostgreSQL(connection string, tablo ismi, tabloyu bizmi oluşturacak yoksa otomatikmi oluşturulacak : otomatik seçiyoruz, kendi tablo default alanları hariç alanalr oluşturmak istiyorsak tabloda.)
+    .WriteTo.PostgreSQL(builder.Configuration.GetConnectionString("PostgreSQL"), "logs", needAutoCreateTable: true, columnOptions: new Dictionary<string, ColumnWriterBase> // ekstra tablo alanları : defaultlara ek
+    {
+        {"message", new RenderedMessageColumnWriter() }, // RenderedMessageColumnWriter isimli nesnenin elde ettiği veri message kolonuna yazdırılacak => message ismini farklı verebilirim ne istersem.
+        {"message_template", new MessageTemplateColumnWriter() },
+        {"level", new LevelColumnWriter() },
+        {"time_stamp", new TimestampColumnWriter() },
+        {"exception", new ExceptionColumnWriter() },
+        {"log_event", new LogEventSerializedColumnWriter() },
+        {"user_name", new UsernameColumnWriter() }
+    }) // PostgreSQL'e loglama yap.
+    .WriteTo.Seq(builder.Configuration["Seq:ServerURL"]) // Seq üzerinden loglamayı takip edebilmek için.
+    .Enrich.FromLogContext() // harici bir beslenme varsa  => context'ten user_name alma gibi bunu eklemeliyiz.
+    .MinimumLevel.Information() // hangi seviyeden sonrasının loglarını tutmalıyız : warning, error'da olabilir.
+    .CreateLogger();
+builder.Host.UseSerilog(log);
+
+#region Uygulamada yapılan requestleride log sayesinde yakalıyabilmek için
+
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.All;
+    logging.RequestHeaders.Add("sec-ch-ua"); // kullanıcıya dair tüm bilgileri getirir
+    //logging.ResponseHeaders.Add("MyResponseHeader"); // respose header'a key ekliyebiliriz.
+    logging.MediaTypeOptions.AddText("application/javascript");
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+});
+
+#endregion
+
+#endregion
+
 
 
 
@@ -59,7 +108,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Token:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
             // apiye gelen isteklerde token'ın expire olup olmadığını kontrol ediyoruz(süresi dolmuşmu)
-            LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null ? expires > DateTime.UtcNow: false 
+            LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null ? expires > DateTime.UtcNow: false,
+            NameClaimType = ClaimTypes.Name // JWT üzerinde Name Claimne karşılık gelen değeri User.Identity.Name properysinden elde edebiliriz. => loglama için eklendi bu satır. => loglamada name elde etmek için.
 		};
     });
 
@@ -77,6 +127,16 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles(); // api içinde new folder diyip : ismine wwwroot dediðimde : direk dünya simgeli bir dosya oluþacak : bu özel bi dizin ve bunun için program.cs de bu kýsmý tanýmlamam gerekli. == tarayýcýdan url kýsmýndan bu klasörün içindkei dosyalara eriþilemez sadece kod içinden eriþilebiliyor : statik olarak tutuluyorlar : sunucuda tutuluyor dosyalarýmýz güvenli bir þekilde : wwwroot içinde tutuyoruz.. 
 
 //yukarýda belirlediðim cors politikasýnýný çaðoýrýyoruz.
+
+#region Serilog - Postgresql 
+// serilog'un çalışması için çağırıyoruz.
+// kendisinden önceki middle way'ler çalışyırılmıyor ondan en üste koymalıyız. alttakikerin loglanması için.
+app.UseSerilogRequestLogging();
+#region Uygulamada yapılan requestleride log sayesinde yakalıyabilmek için
+app.UseHttpLogging();
+#endregion
+#endregion
+
 app.UseCors();
 //
 
@@ -86,6 +146,17 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 #endregion
 app.UseAuthorization();
+
+#region Serilog - Postgresql 
+// : usernameyi almak için araya girmek(Middle Way) için => app.UseAuthentication(), app.UseAuthorization() işlemlerinden  sonra olmalı username authentication işleminden sonra alabilceğimiz için. 
+app.Use(async (context, next) => // context o anki request, next sonrasındaki işlemler için.
+{
+    // loglamada user_name değerini tabloya kaydetmek istediğmizden username alanını elde etmek için bu işlem.
+    var username = context.User?.Identity?.IsAuthenticated != null || true ? context.User.Identity.Name : null;
+    LogContext.PushProperty("user_name", username);
+    await next();
+});
+#endregion
 
 app.MapControllers();
 
