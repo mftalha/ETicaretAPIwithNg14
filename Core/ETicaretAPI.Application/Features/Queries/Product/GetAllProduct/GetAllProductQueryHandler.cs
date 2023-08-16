@@ -17,6 +17,7 @@ public class GetAllProductQueryHandler : IRequestHandler<GetAllProductQueryReque
     public async Task<GetAllProductQueryResponse> Handle(GetAllProductQueryRequest request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Get all product");
+        //throw new Exception("Hata alındı!");
         var totalCount = _productReadRepository.GetAll(false).Count();
         //skip ile kaçıncı veriye kadar alınacağını söylüyorum mesela 15 ; take ile de 5 tane alınacaksa = 10 - 15 arası veriler getiriliyor gibi bi mantık anlıyorum.
         var products = _productReadRepository.GetAll(false).Skip(request.Page * request.Size).Take(request.Size).Select(p => new

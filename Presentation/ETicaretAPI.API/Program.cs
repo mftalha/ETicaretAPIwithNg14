@@ -1,4 +1,5 @@
 ﻿using ETicaretAPI.API.Configurations.ColumnWriters;
+using ETicaretAPI.API.Extensions;
 using ETicaretAPI.Application;
 using ETicaretAPI.Application.Validators.Products;
 using ETicaretAPI.Infrastructure;
@@ -116,6 +117,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 #endregion
 
 var app = builder.Build();
+// Middleware işelmlerini WebApplication'a sahip app referansın üzerinden çağırabiliyoruz.
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -124,13 +126,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// uygulamanın herhangi bir yerinde patlama olduğunda bunun üzerinden kontrol edebiliriz.
+//app.UseExceptionHandler();
+// app.Services.GetRequiredService<ILogger<Program>>() => buna karşılık olan Logger'ı bize getirecektir.
+app.ConfigureExceptionHandler<Program>(app.Services.GetRequiredService<ILogger<Program>>()); //program.cs kalabalıklaşmasın diye extension üzerinden işlemleri yapıp extension'ı burada çağırıyruz => Middleware işlemelrinde böyle yapmak daha doğru.
+
+
 app.UseStaticFiles(); // api içinde new folder diyip : ismine wwwroot dediðimde : direk dünya simgeli bir dosya oluþacak : bu özel bi dizin ve bunun için program.cs de bu kýsmý tanýmlamam gerekli. == tarayýcýdan url kýsmýndan bu klasörün içindkei dosyalara eriþilemez sadece kod içinden eriþilebiliyor : statik olarak tutuluyorlar : sunucuda tutuluyor dosyalarýmýz güvenli bir þekilde : wwwroot içinde tutuyoruz.. 
 
 //yukarýda belirlediðim cors politikasýnýný çaðoýrýyoruz.
 
 #region Serilog - Postgresql 
 // serilog'un çalışması için çağırıyoruz.
-// kendisinden önceki middle way'ler çalışyırılmıyor ondan en üste koymalıyız. alttakikerin loglanması için.
+// kendisinden önceki middlewares çalışyırılmıyor ondan en üste koymalıyız. alttakikerin loglanması için.
 app.UseSerilogRequestLogging();
 #region Uygulamada yapılan requestleride log sayesinde yakalıyabilmek için
 app.UseHttpLogging();
@@ -148,7 +156,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 #region Serilog - Postgresql 
-// : usernameyi almak için araya girmek(Middle Way) için => app.UseAuthentication(), app.UseAuthorization() işlemlerinden  sonra olmalı username authentication işleminden sonra alabilceğimiz için. 
+// : usernameyi almak için araya girmek(middleware) için => app.UseAuthentication(), app.UseAuthorization() işlemlerinden  sonra olmalı username authentication işleminden sonra alabilceğimiz için. 
 app.Use(async (context, next) => // context o anki request, next sonrasındaki işlemler için.
 {
     // loglamada user_name değerini tabloya kaydetmek istediğmizden username alanını elde etmek için bu işlem.
