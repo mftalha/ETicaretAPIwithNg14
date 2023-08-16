@@ -30,6 +30,8 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] GetAllProductQueryRequest getAllProductQueryRequest)
     {
+        // throw new Exception("Laylaylom");  // sunucuya 500 hatası : sunucuya erişilemedi döndürür.,
+        //return Unauthorized(); // yetkisiz erişim 401 döndürmesi için
         //paremtrede verdiğimiz requestin responseni bu şekilde karşılıyoruz. : mimari böyle
         GetAllProductQueryResponse response = await _mediator.Send(getAllProductQueryRequest);
         return Ok(response);
