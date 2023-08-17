@@ -15,7 +15,7 @@ public class GoogleLoginCommandHandler : IRequestHandler<GoogleLoginCommandReqeu
 
     public async Task<GoogleLoginCommandResponse> Handle(GoogleLoginCommandReqeust request, CancellationToken cancellationToken)
 	{
-        var token = await _authService.GoogleLoginAsync(request.IdToken, 15);
+        var token = await _authService.GoogleLoginAsync(request.IdToken, 900);
         return new()
         {
             Token = token,

@@ -6,6 +6,7 @@ using ETicaretAPI.Infrastructure;
 using ETicaretAPI.Infrastructure.Filters;
 using ETicaretAPI.Infrastructure.Services.Storage.Azure;
 using ETicaretAPI.Persistence;
+using ETicaretAPI.SignalR;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
@@ -27,11 +28,13 @@ builder.Services.AddInfrastructureServices();
 //builder.Services.AddStorage<LocalStorage>(); //Mimari artýk storage iþlemlerini : LocalStorageye göre yapacaktýr.
 
 builder.Services.AddApplicationServices();
+builder.Services.AddSignalRServices();
 
 builder.Services.AddStorage<AzureStorage>(); 
 
 //cors politikalarý için servis oluþturma => app.UseCors(); diye aþþagýdan eklemeyi unutmamalýyým
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins("http://localhost:4200", "https://localhost:4200").AllowAnyHeader().AllowAnyMethod()
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins("http://localhost:4200", "https://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials()
+// AllowCredentials() => SignalR isteklerinede izin veriyoruz.
 //bu adresten gelen istekleri kabul et =  cros politikasý için yazýldý. == bu adres dýþýndan gelen istekler eriþemez.
 //policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin() //böyle dediðimde her gelen istek atabilecek belirli bir url sýnýrý koymadýk daha.
 )); //2 seçenek var sitelere göre veya default olarak projeye göre
@@ -156,6 +159,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 #region Serilog - Postgresql 
+// bu middleware işlemlerinide extension'a almam daha doğru : yapmalıyım bi boşlukta.
 // : usernameyi almak için araya girmek(middleware) için => app.UseAuthentication(), app.UseAuthorization() işlemlerinden  sonra olmalı username authentication işleminden sonra alabilceğimiz için. 
 app.Use(async (context, next) => // context o anki request, next sonrasındaki işlemler için.
 {
@@ -167,5 +171,10 @@ app.Use(async (context, next) => // context o anki request, next sonrasındaki i
 #endregion
 
 app.MapControllers();
+#region SignalR 
+// Extension
+app.MapHubs();
+#endregion
+
 
 app.Run();
