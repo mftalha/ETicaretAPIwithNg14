@@ -25,7 +25,8 @@ public class GetProductImagesQueryHandler : IRequestHandler<GetProductImagesQuer
         {
             Path = $"{configuration["BaseStorageUrl"]}/{p.Path}",
             FileName =  p.FileName,
-            Id = p.Id
-        }).ToList();
+            Id = p.Id,
+            Showcase = p.Showcase
+		}).ToList();
     }
 }

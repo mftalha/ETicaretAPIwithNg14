@@ -9,6 +9,7 @@ namespace ETicaretAPI.Domain.Entities
     //burda file'dan türetme sebebim : Entity framwork Table Per Hierarchy mimarisini kullanmak için.
     public class ProductImageFile : File 
     {
+        public bool Showcase { get; set; }
         public ICollection<Product> Products { get; set; }    
     }
 }

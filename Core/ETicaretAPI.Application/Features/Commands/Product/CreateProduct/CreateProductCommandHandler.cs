@@ -17,12 +17,14 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommandR
 
     public async Task<CreateProductCommandResponse> Handle(CreateProductCommandRequest request, CancellationToken cancellationToken)
     {
+
         await _productWriteRepository.AddAsync(new()
         {
             Name = request.Name,
             Price = request.Price,
             Stock = request.Stock
         });
+
         await _productWriteRepository.SaveAsync();
         await _productHubService.ProductAddedMessageAsync($"{request.Name} isminde ürün eklenmiştir.");
         return new();
