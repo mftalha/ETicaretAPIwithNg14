@@ -18,6 +18,23 @@ namespace ETicaretAPI.Persistence.Contexts //bu classın amacı sql deki tablola
         public DbSet<Domain.Entities.File> Files { get; set; } //system.io.files ile çakıştığından tam yolu ile veriyoruz : burdaki dir diye.
         public DbSet<ProductImageFile> ProductImageFiles { get; set; }
         public DbSet<InvoiceFile> InvoiceFiles { get; set; }
+        public DbSet<Basket> Baskets { get; set; }
+        public DbSet<BasketItem> BasketItems { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<Order>()
+                .HasKey(o => o.Id);
+
+            builder.Entity<Basket>()
+                .HasOne(b => b.Order)
+                .WithOne(o => o.Basket)
+                .HasForeignKey<Order>(o => o.Id);
+
+            // IdentityDbContext i kullandığımız için dbcontext yerine butür override larda base vermek gerekiyor.
+            base.OnModelCreating(builder);
+        }
+
 
         // burada ben değer verilen entityleride değiştirebilirim : verilmeyenlerede atama yapabilirim datalar verilip = güncelleme veya ekleme : savechanges geldikten sonra tetiklenmir burası o yüzden o datalara erişebiliyorum aşşağıda da eriştim zaten.
         //Burası sayesinde her SaveChanges tetiklendiğinde araya girip istediğim controlleri sağlayacam = interceptor == entityframwork de uyguluyoruz

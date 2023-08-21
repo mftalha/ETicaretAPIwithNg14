@@ -16,6 +16,7 @@ namespace ETicaretAPI.Domain.Entities
         // n mantıklarında = çoktan 1 olana entity'e bir ICollection verilir
         public ICollection<Product> Products { get; set; } //bu orderın prodoct ile n ilişkisi olduğunu gösterir : böyle bırakırsak product'a bişey yazmassak : bir order'ın birden çok product'ı olduğunu ifade eder. ama biz prodoct'ada aynı şekil belirterek n e n ilişki olduğunu belirtecez. == (yani Icollectionu koyduğumuz sayfadaki entity 1 : i , Icollection ile belirttiğimiz entities ise n ilişkisini ifade eder (n : birden fazla olabilir anlamında))
         public Customer customer { get; set; }
+        public Basket Basket { get; set; }
 
     }
 }

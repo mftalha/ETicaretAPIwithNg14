@@ -20,6 +20,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region test
+// alışveriş sepeti altyapısı - 52. ders
+// NameClaimType = ClaimTypes.Name => loglama için olusturulan bu veriye erişmek için oluşturuldu.
+// clientten gelen request neticesinde oluşturulan httpcontext nesnesine katmanlardaki classlar üzerinden(business logic) erişebilmemizi sağlayan bir sevistir.
+builder.Services.AddHttpContextAccessor(); 
+#endregion
+
 //Apý katmanýndan Persistence katmanýna eriþim için yazdýðýmýz methodu depending enjectiona enjecte ediyoruz. = tabi bunun için API katmanýna Persistence katmanýný referans olarak veriyoruz.
 builder.Services.AddPersistenceServices();
 //Apý katmanýndan Infrastructure katmanýna eriþim için yazdýðýmýz methodu depending enjectiona enjecte ediyoruz. =  bunun için API katmanýna Infrastructure katmanýný referans olarak veriyoruz.
