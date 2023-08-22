@@ -34,6 +34,7 @@ public class BasketService : IBasketService
 
     private async Task<Basket?> ContextUser()
     {
+        // Controllarda Authorize verilmez ise patlar çünkü jwt içinde dolduruyoruz bu veriyi.
         var usurnama = _httpContextAccessor?.HttpContext?.User?.Identity?.Name;
         if (!string.IsNullOrEmpty(usurnama))
         {
@@ -117,6 +118,15 @@ public class BasketService : IBasketService
         {
             _basketItem.Quantity = basketItem.Quantity;
             await _basketItemWriteRepository.SaveAsync();
+        }
+    }
+
+    public Basket? GetUserActiveBasket
+    {
+        get
+        {
+            Basket? basket =  ContextUser().Result;
+            return basket;
         }
     }
 }

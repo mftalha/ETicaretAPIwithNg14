@@ -10,6 +10,7 @@ public static class ServiceRegistration
     {
         collection.AddTransient<IProductHubService, ProductHubService>();
         // Bu işlem sayesinde SignalR kütüphanesi kendisi ile alakalı herşeyi IOSContainer'a atıyor bizde direk çağırabiliyoruz ihtiyacımız olan yapılarını.
+        collection.AddTransient<IOrderHubService, OrderHubService>();
         collection.AddSignalR(); 
     }
 }
