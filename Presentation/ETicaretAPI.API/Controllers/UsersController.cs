@@ -1,8 +1,6 @@
 ﻿using ETicaretAPI.Application.Abstractions.Services;
 using ETicaretAPI.Application.Features.Commands.AppUser.CreateUser;
-using ETicaretAPI.Application.Features.Commands.AppUser.FacebookLogin;
-using ETicaretAPI.Application.Features.Commands.AppUser.GoogleLogin;
-using ETicaretAPI.Application.Features.Commands.AppUser.LoginUser;
+using ETicaretAPI.Application.Features.Commands.AppUser.UpdatePassword;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,9 +13,10 @@ public class UsersController : ControllerBase
     readonly private IMediator _mediator;
     readonly IMailService _mailService;
 
-    public UsersController(IMediator mediator)
+    public UsersController(IMediator mediator, IMailService mailService)
     {
         _mediator = mediator;
+        _mailService = mailService;
     }
 
     [HttpPost]
@@ -27,10 +26,11 @@ public class UsersController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> ExampleMailTest()
+    [HttpPost("update-password")]
+    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordCommandRequest updatePasswordCommandRequest)
     {
-        await _mailService.SendMessageAsync("talha.satir0729@gmail.com", "Example Mail", "<strong>Bu bir örnek maildir.</strong>");
-        return Ok();
+        UpdatePasswordCommandResponse response = await _mediator.Send(updatePasswordCommandRequest);
+        return Ok(response);
     }
+
 }

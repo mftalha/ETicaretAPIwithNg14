@@ -1,8 +1,11 @@
 ﻿using ETicaretAPI.Application.Abstractions.Services;
 using ETicaretAPI.Application.DTOs.User;
 using ETicaretAPI.Application.Exceptions;
+using ETicaretAPI.Application.Helpers;
 using ETicaretAPI.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 namespace ETicaretAPI.Persistence.Services;
 
@@ -41,7 +44,7 @@ public class UserService : IUserService
         return response;
     }
 
-    public async Task UpdateRefreshToken(string refreshToken, AppUser user, DateTime accessTokenDate, int addOnAccessTokenDate)
+    public async Task UpdateRefreshTokenAsync(string refreshToken, AppUser user, DateTime accessTokenDate, int addOnAccessTokenDate)
     {
         if (user != null)
         {
@@ -51,5 +54,25 @@ public class UserService : IUserService
         }
         else
             throw new NotFoundUserException();
+    }
+
+    public async Task UpdatePasswordAsync(string userId, string resetToken, string newPassword)
+    {
+        AppUser user = await _userManager.FindByIdAsync(userId);
+        if (user != null)
+        {
+            //byte[] tokenBytes = WebEncoders.Base64UrlDecode(resetToken);
+            //resetToken = Encoding.UTF8.GetString(tokenBytes);
+
+            resetToken = resetToken.UrlDecode();
+            // şifre değişikliği için kullandığımız Identity methodu
+            IdentityResult result = await _userManager.ResetPasswordAsync(user, resetToken, newPassword);
+
+            if (result.Succeeded)
+                //eğerki şifre değiştirme işlemi başarılı ise kullanıcının SecurityStamp değerini ezmemiz gerekiyor(değiştirme) => resettoken değeri birdahaki istekde farklı gelsin ve aynı reset token ile birdaha şifre değişikliği yapamasın diye.
+                await _userManager.UpdateSecurityStampAsync(user);
+            else
+                throw new PasswordChangeFailedException();
+        }
     }
 }
