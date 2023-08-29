@@ -86,6 +86,14 @@ public class MailService : IMailService
         await SendMailAsync(to, "Şifre Yenileme Talebi", mail.ToString());
 
     }
+
+    public async Task SendCompletedOrderMailAsync(string to, string orderCode, DateTime orderDate, string userName)
+    {
+        string mail = $"Sayın {userName} Merhaba<br>"+
+            $"{orderDate} tarihinde vermiş olduğunuz {orderCode} kodlu siparişiniz tamamlanmış ve kargo firmasına verilmiştir. <br>İyi Günler";
+
+        await SendMailAsync(to, $"{orderCode} Sipariş Numaralı Siparişiniz tamamlandı", mail);
+    }
 }
 
 // https://www.youtube.com/watch?v=WXI_kS17rDs&ab_channel=MuratY%C3%BCceda%C4%9F => google mail gönderimi için takip edilen video

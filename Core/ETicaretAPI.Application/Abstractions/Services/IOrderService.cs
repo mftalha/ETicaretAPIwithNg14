@@ -7,5 +7,6 @@ public interface IOrderService
     Task CreateOrderAsync(CreateOrder createOrder);
     Task<ListOrder> GetAllOrderAsync(int page, int size);
     Task<SingleOrder> GetOrderByIdAsync(string id);
-    Task CompleteOrderAsync(string id);
+    //tapple nesne deniyor yazılışı farklı olabilir
+    Task<(bool, CompletedOrderDTO)> CompleteOrderAsync(string id);
 }
