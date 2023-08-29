@@ -20,6 +20,7 @@ namespace ETicaretAPI.Persistence.Contexts //bu classın amacı sql deki tablola
         public DbSet<InvoiceFile> InvoiceFiles { get; set; }
         public DbSet<Basket> Baskets { get; set; }
         public DbSet<BasketItem> BasketItems { get; set; }
+        public DbSet<CompletedOrder> CompletedOrders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -34,6 +35,11 @@ namespace ETicaretAPI.Persistence.Contexts //bu classın amacı sql deki tablola
                 .HasOne(b => b.Order)
                 .WithOne(o => o.Basket)
                 .HasForeignKey<Order>(o => o.Id);
+
+            builder.Entity<Order>()
+                .HasOne(o => o.CompletedOrder)
+                .WithOne(c => c.Order)
+                .HasForeignKey<CompletedOrder>(c => c.OrderID);
 
             // IdentityDbContext i kullandığımız için dbcontext yerine butür override larda base vermek gerekiyor.
             base.OnModelCreating(builder);
