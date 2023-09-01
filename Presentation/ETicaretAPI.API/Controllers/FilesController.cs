@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace ETicaretAPI.API.Controllers;
 
+// burada authorize işlemi yapmak gerekebilir.
 [Route("api/[controller]")]
 [ApiController]
 public class FilesController : ControllerBase

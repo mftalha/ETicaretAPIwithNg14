@@ -1,4 +1,7 @@
-﻿using ETicaretAPI.Application.Features.Commands.Product.CreateProduct;
+﻿using ETicaretAPI.Application.Consts;
+using ETicaretAPI.Application.CustomAttributes;
+using ETicaretAPI.Application.Enums;
+using ETicaretAPI.Application.Features.Commands.Product.CreateProduct;
 using ETicaretAPI.Application.Features.Commands.Product.RemoveProduct;
 using ETicaretAPI.Application.Features.Commands.Product.UpdateProduct;
 using ETicaretAPI.Application.Features.Commands.ProductImageFile.ChangeShowcaseImage;
@@ -48,7 +51,8 @@ public class ProductsController : ControllerBase
     //dış dünyadan gelecek prodoct işlemlerini entity ile karşılamıyacam view model ile karşılayıp ona göre işleme devam edecem.
     [HttpPost]
 	[Authorize(AuthenticationSchemes = "Admin")] // controller bazında değilde action bazında yetkilendirme veriyoruz.
-	public async Task<IActionResult> Post(CreateProductCommandRequest createProductCommandRequest)
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Writing, Definition = "Create Product")]
+    public async Task<IActionResult> Post(CreateProductCommandRequest createProductCommandRequest)
     {
         CreateProductCommandResponse response =  await _mediator.Send(createProductCommandRequest);
         return StatusCode((int)HttpStatusCode.Created);
@@ -56,7 +60,8 @@ public class ProductsController : ControllerBase
 
     [HttpPut]
 	[Authorize(AuthenticationSchemes = "Admin")]
-	public async Task<IActionResult> Put([FromBody] UpdateProductCommandRequest updateProductCommandRequest)
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Updating, Definition = "Update Product")]
+    public async Task<IActionResult> Put([FromBody] UpdateProductCommandRequest updateProductCommandRequest)
     {
         UpdateProductCommandResponse response = await _mediator.Send(updateProductCommandRequest);
         return Ok();
@@ -64,7 +69,8 @@ public class ProductsController : ControllerBase
 
     [HttpDelete("{id}")] //id diye bir paremetre gelecek diye belirtiyoruz.
 	[Authorize(AuthenticationSchemes = "Admin")]
-	public async Task<IActionResult> Delete([FromRoute] RemoveProductCommandRequest removeProductCommandRequest)
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Deleting, Definition = "Delete Product")]
+    public async Task<IActionResult> Delete([FromRoute] RemoveProductCommandRequest removeProductCommandRequest)
     {
         RemoveProductCommandResponse response = await _mediator.Send(removeProductCommandRequest);
         return Ok();
@@ -73,7 +79,8 @@ public class ProductsController : ControllerBase
     [HttpPost("[action]")] // birden fazla post methodu olduğu için action ismi ile ayırmamız gerekiyor : şart = bizde kendi adını veriyoruz action kısmına.
 						   // ...com/api/products?id=123  => querystring // birden fazla da olabilir deger alma belirsiz
 	[Authorize(AuthenticationSchemes = "Admin")]
-	public async Task<IActionResult> Upload([FromQuery] UploadProductImageCommandRequest uploadProductImageCommandRequest)
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Writing, Definition = "Upload Product File")]
+    public async Task<IActionResult> Upload([FromQuery] UploadProductImageCommandRequest uploadProductImageCommandRequest)
     {
         uploadProductImageCommandRequest.Files = Request.Form.Files;
         UploadProductImageCommandResponse response = await _mediator.Send(uploadProductImageCommandRequest);
@@ -82,7 +89,8 @@ public class ProductsController : ControllerBase
 
     [HttpGet("[action]/{id}")] // ..com/api/products/123  : root data => ne geleceği belli ise
 	[Authorize(AuthenticationSchemes = "Admin")]
-	public async Task<IActionResult> GetProductImages([FromRoute] GetProductImagesQueryRequest getProductImagesQueryRequest)
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Images")]
+    public async Task<IActionResult> GetProductImages([FromRoute] GetProductImagesQueryRequest getProductImagesQueryRequest)
     {
         List<GetProductImagesQueryResponse> response = await _mediator.Send(getProductImagesQueryRequest);
         return Ok(response);
@@ -90,7 +98,8 @@ public class ProductsController : ControllerBase
 
     [HttpDelete("[action]/{id}")]
 	[Authorize(AuthenticationSchemes = "Admin")]
-	public async Task<IActionResult> DeleteProductImage([FromRoute] RemoveProductImageCommandRequest removeProductImageCommandRequest, [FromQuery] string imageId)
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Deleting, Definition = "Delete Product Image")]
+    public async Task<IActionResult> DeleteProductImage([FromRoute] RemoveProductImageCommandRequest removeProductImageCommandRequest, [FromQuery] string imageId)
     {
         removeProductImageCommandRequest.imageId = imageId;
         RemoveProductImageCommandResponse removeProductImageCommandResponse = await _mediator.Send(removeProductImageCommandRequest);
@@ -99,11 +108,11 @@ public class ProductsController : ControllerBase
 
     [HttpGet("[action]")]
 	[Authorize(AuthenticationSchemes = "Admin")]
+    [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Updating, Definition = "Change Showcase Image")]
     public async Task<IActionResult> ChangeShowcaseImage([FromQuery] ChangeShowcaseImageCommandRequest changeShowcaseImageCommandRequest)
     {
         ChangeShowcaseImageCommandResponse response = await _mediator.Send(changeShowcaseImageCommandRequest);
         return Ok(response);
-
 	}
 
 }
