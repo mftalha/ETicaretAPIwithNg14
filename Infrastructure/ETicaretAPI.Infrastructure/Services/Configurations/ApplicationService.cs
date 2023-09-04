@@ -10,7 +10,7 @@ using System.Reflection;
 namespace ETicaretAPI.Infrastructure.Services.Configurations;
 
 // Role kontrolü yapılacak actionları bir liste şeklinde elde etmek için oluşturuldu. => araya girilip ilgili işlemelr yapılacak sonrasında.
-// https://www.youtube.com/watch?v=QZYtrzGEcvo&list=PLQVXoXFVVtp1DFmoTL4cPTWEWiqndKexZ&index=64 dersinden.
+// https://www.youtube.com/watch?v=QZYtrzGEcvo&list=PLQVXoXFVVtp1DFmoTL4cPTWEWiqndKexZ&index=63 dersinden.
 public class ApplicationService : IApplicationService
 {
     public List<Menu> GetAuthorizeDefinitionEndpoints(Type type)
