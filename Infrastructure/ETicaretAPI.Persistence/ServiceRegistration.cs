@@ -67,16 +67,20 @@ namespace ETicaretAPI.Persistence
             services.AddScoped<IBasketItemWriteRepository, BasketItemWriteRepository>();
             services.AddScoped<ICompletedOrderReadRepository, ComplatedOrderReadRepository>();
             services.AddScoped<ICompletedOrderWriteRepository, ComplatedOrderWriteRepository>();
+			services.AddScoped<IMenuReadRepository, MenuReadRepository>();
+			services.AddScoped<IMenuWriteRepository, MenuWriteRepository>();
+			services.AddScoped<IEndpointReadRepository, EndpointReadRepository>();
+			services.AddScoped<IEndpointWriteRepository, EndpointWriteRepository>();
+			//context nesnesini default olarak ServiceLefetime.Scope eklediğinden Repostory servislerini aynı yaşam döngüsünde eklememizin yararı olurmuş. = ondan AddScoped da ekliyoruz.
 
-            //context nesnesini default olarak ServiceLefetime.Scope eklediğinden Repostory servislerini aynı yaşam döngüsünde eklememizin yararı olurmuş. = ondan AddScoped da ekliyoruz.
-
-            services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IExternalAuthentication, AuthService>();
             services.AddScoped<IInternalAuthentication, AuthService>();
             services.AddScoped<IBasketService, BasketService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
         }
     }
 }
