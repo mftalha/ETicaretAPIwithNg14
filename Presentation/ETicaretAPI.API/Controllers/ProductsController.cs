@@ -1,4 +1,5 @@
-﻿using ETicaretAPI.Application.Consts;
+﻿using ETicaretAPI.Application.Abstractions.Services;
+using ETicaretAPI.Application.Consts;
 using ETicaretAPI.Application.CustomAttributes;
 using ETicaretAPI.Application.Enums;
 using ETicaretAPI.Application.Features.Commands.Product.CreateProduct;
@@ -26,12 +27,14 @@ public class ProductsController : ControllerBase
 {
 
     readonly private IMediator _mediator;
-    public ProductsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    readonly IProductService _productService;
+	public ProductsController(IMediator mediator, IProductService productService)
+	{
+		_mediator = mediator;
+		_productService = productService;
+	}
 
-    [HttpGet]
+	[HttpGet]
     public async Task<IActionResult> Get([FromQuery] GetAllProductQueryRequest getAllProductQueryRequest)
     {
         // throw new Exception("Laylaylom");  // sunucuya 500 hatası : sunucuya erişilemedi döndürür.,
@@ -41,7 +44,14 @@ public class ProductsController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("{id}")]
+	[HttpGet("qrcode/{productId}")]
+	public async Task<IActionResult> GetQrCodeToProduct([FromRoute] string productId)
+	{
+		var data = await _productService.QRCodeToProductAsync(productId);
+		return File(data, "image/png"); //biz file olarak döndürüyoruz.
+	}
+
+	[HttpGet("{id}")]
     public async Task<IActionResult> Get([FromRoute] GetByIdProductQueryRequest getByIdProductQueryRequest)
     {
         GetByIdProductQueryResponse response= await _mediator.Send(getByIdProductQueryRequest);
